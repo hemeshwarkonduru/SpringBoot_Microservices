@@ -31,7 +31,7 @@ public class OrderService {
     OrderRepository orderRepository;
 
     @Autowired
-    WebClient.Builder webClient;
+    WebClient.Builder webClientOrderBuilder;
 
     private static final Logger logger = LogManager.getLogger(OrderService.class);
 
@@ -84,8 +84,8 @@ public class OrderService {
                 if (orderRequest.getItem() != null && !orderRequest.getItem().isEmpty()) {
 
                     //When creating order need to check if user is present in userDb or not
-                    UserDetails userDetails = webClient.build().get()
-                            .uri("http://localhost:8080/user/userDetailsByMail"
+                    UserDetails userDetails = webClientOrderBuilder.build().get()
+                            .uri("http://user-service/user/userDetailsByMail"
                             ,uriBuilder -> uriBuilder.queryParam("mail" ,orderRequest.getUserId()).build())
                             .retrieve()
                             .bodyToMono(UserDetails.class)
