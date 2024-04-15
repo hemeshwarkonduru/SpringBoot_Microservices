@@ -86,5 +86,11 @@ public class UserService {
         }
     }
 
-
+    static String something(){
+        try(Scanner f = new Scanner(new File("test.in"))){
+            return String.format("%s,%d,%s",f.nextLine(),f.nextInt(),f.nextLine());
+        }catch(Exception e){
+            return null
+        }
+    }
 }
