@@ -18,6 +18,7 @@
         <module>user</module>
         <module>order</module>
         <module>discovery-server</module>
+        <module>apigateway-service</module>
     </modules>
 
     <properties>

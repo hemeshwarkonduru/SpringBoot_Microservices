@@ -85,7 +85,7 @@ public class OrderService {
 
                     //When creating order need to check if user is present in userDb or not
                     UserDetails userDetails = webClient.build().get()
-                            .uri("http://user-service/user/userDetailsByMail"
+                            .uri("http://user/user/userDetailsByMail"
                             ,uriBuilder -> uriBuilder.queryParam("mail" ,orderRequest.getUserId()).build())
                             .retrieve()
                             .bodyToMono(UserDetails.class)
