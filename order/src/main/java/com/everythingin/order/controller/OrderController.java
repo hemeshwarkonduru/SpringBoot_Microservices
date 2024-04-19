@@ -6,11 +6,14 @@ import com.everythingin.order.dto.UserOrderDetails;
 import com.everythingin.order.exception.MyCustomException;
 import com.everythingin.order.request.OrderRequest;
 import com.everythingin.order.service.OrderService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/order")
@@ -34,20 +37,26 @@ public class OrderController {
     }
 
     @PostMapping("/createOrder")
-    public ResponseEntity<SuccessOutput> createOrder(@RequestBody OrderRequest orderRequest) throws MyCustomException {
+    @CircuitBreaker(name = "user", fallbackMethod = "fallbackMethodOrder")
+    public CompletableFuture<ResponseEntity<SuccessOutput>> createOrder(@RequestBody OrderRequest orderRequest) throws MyCustomException {
         try {
             SuccessOutput response = orderService.createOrderService(orderRequest);
             if (response != null) {
-                return ResponseEntity.ok().body(response);
+                return CompletableFuture.supplyAsync( () -> ResponseEntity.ok().body(response));
             } else {
-                return ResponseEntity.badRequest().body(null);
+                return CompletableFuture.supplyAsync( () -> ResponseEntity.ok().body(null));
             }
         }catch (Exception e){
             throw new MyCustomException("Something Went Wrong");
         }
-
     }
 
+    public CompletableFuture<SuccessOutput> fallbackMethodOrder(OrderRequest orderRequest, RuntimeException runtimeException){
+        SuccessOutput output =  SuccessOutput.builder().build();
+        logger.info("Fall Back Method");
+        output.setMessage("Oops! Something went wrong, please order after some time!");
+        return CompletableFuture.supplyAsync(() -> output);
+    }
 
 
 }
