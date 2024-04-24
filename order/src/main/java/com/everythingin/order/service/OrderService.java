@@ -5,6 +5,7 @@ import com.everythingin.order.dto.SuccessOutput;
 import com.everythingin.order.dto.OrderDetails;
 import com.everythingin.order.dto.UserOrderDetails;
 import com.everythingin.order.entity.Order;
+import com.everythingin.order.entity.OrderPlacedNotification;
 import com.everythingin.order.exception.MyCustomException;
 import com.everythingin.order.repository.OrderRepository;
 import com.everythingin.order.request.OrderRequest;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,6 +34,9 @@ public class OrderService {
 
     @Autowired
     WebClient.Builder webClient;
+
+    @Autowired
+    KafkaTemplate<String, OrderPlacedNotification> kafkaTemplateOrder;
 
     private static final Logger logger = LogManager.getLogger(OrderService.class);
 
@@ -103,9 +108,14 @@ public class OrderService {
                                 .build();
 
                         orderRepository.save(order);
-
+                        kafkaTemplateOrder.send("orderPlacedNotification",
+                                OrderPlacedNotification.builder()
+                                        .orderId(order.getOrderId())
+                                        .item(order.getItem())
+                                        .build());
                         response.setMessage(SUCCESS);
-                    }else {
+                    }
+                    else {
                         response.setMessage(NO_USER_FOUND);
                     }
                 } else {

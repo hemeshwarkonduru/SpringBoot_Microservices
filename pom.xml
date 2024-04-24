@@ -19,6 +19,7 @@
         <module>order</module>
         <module>discovery-server</module>
         <module>apigateway-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>
